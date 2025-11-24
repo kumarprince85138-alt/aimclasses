@@ -1,0 +1,742 @@
+<!doctype html>
+<html lang="hi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SCIENCE TUTORIAL — Coaching Management</title>
+
+  <!-- html2pdf for receipt generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+
+  <style>
+    :root{
+      --bg:#000;
+      --card:#0f1418;
+      --muted:#9aa6b2;
+      --text:#e6f0f6;
+      --accent:#ffb84d;
+      --accent2:#ff6a00;
+      --danger:#e03b3b;
+      --glass: rgba(255,255,255,0.03);
+      --card-border: rgba(255,0,0,0.22);
+      --card-border-weak: rgba(255,0,0,0.12);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:Inter,Segoe UI,Roboto,Arial,sans-serif;
+      background:linear-gradient(180deg,#020407,#051018 120%);
+      color:var(--text);
+      padding:18px;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      transition:background 400ms ease;
+    }
+    .wrap{max-width:1100px;margin:0 auto}
+    header{display:flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:8px;opacity:0;transform:translateY(8px);animation:fadeUp .5s forwards}
+    .brand{background:linear-gradient(90deg,var(--accent),var(--accent2));color:#07101a;padding:18px 22px;border-radius:12px;font-weight:900;font-size:36px;letter-spacing:1px;text-align:center;box-shadow:0 6px 18px rgba(0,0,0,0.6)}
+    .address{color:var(--muted);font-size:14px;text-align:center;margin-top:4px}
+
+    .nav-wrap{position:relative; margin:14px 0 18px}
+    nav{display:flex;gap:10px;flex-wrap:nowrap;overflow:auto;padding:6px 6px}
+    .nav-btn{
+      background:linear-gradient(90deg,var(--accent),var(--accent2));
+      color:#07101a;
+      padding:10px 14px;border-radius:10px;cursor:pointer;white-space:nowrap;
+      transform:translateY(0); transition:transform 180ms ease, box-shadow 180ms ease, opacity 180ms ease;
+      box-shadow: 0 8px 22px rgba(0,0,0,0.6); border:0; font-weight:800;
+      will-change:transform,opacity;
+    }
+    .nav-btn:hover{ transform:translateY(-4px) scale(1.02); box-shadow:0 10px 30px rgba(0,0,0,0.75); opacity:1; }
+    .nav-btn:active{ transform:translateY(-2px) scale(0.995) }
+    .nav-indicator{ position:absolute; height:6px; background:linear-gradient(90deg,var(--accent),var(--accent2)); border-radius:6px; bottom:-6px; left:0; width:0; transition:all 240ms cubic-bezier(.2,.9,.3,1); pointer-events:none }
+
+    /* Cards and animations */
+    .card{
+      background:var(--card);
+      padding:14px;
+      border-radius:10px;
+      border:1px solid var(--card-border);
+      box-shadow: 0 6px 30px rgba(0,0,0,0.6);
+      opacity:0; transform:translateY(10px); animation:cardIn .45s forwards;
+      transition:box-shadow 220ms ease, transform 260ms ease;
+    }
+    .card:hover{ box-shadow: 0 12px 36px rgba(0,0,0,0.7); transform:translateY(0); }
+
+    .grid{display:grid;gap:12px}
+    label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+    input,select,textarea,button{padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--text);width:100%}
+    .row{display:flex;gap:12px;flex-wrap:wrap}
+    .two{grid-template-columns:1fr 1fr}
+    .students-list{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+    .student{
+      display:flex;justify-content:space-between;gap:12px;align-items:center;padding:12px;border-radius:10px;
+      border:1px solid var(--card-border-weak);background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.01));
+      transition:transform 160ms ease, box-shadow 160ms ease; will-change:transform,opacity,box-shadow;
+    }
+    .student:hover{ transform:translateY(-6px); box-shadow: 0 18px 36px rgba(0,0,0,0.5) }
+    .avatar{width:48px;height:48px;border-radius:8px;background:rgba(255,255,255,0.03);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--accent);font-size:18px}
+    .muted{color:var(--muted)}
+    .actions{display:flex;gap:8px;align-items:center}
+    .btn{padding:8px 12px;border-radius:8px;cursor:pointer;border:0;background:linear-gradient(90deg,var(--accent),var(--accent2));color:#07101a;font-weight:700;animation:btnPulse 2.6s ease-in-out infinite}
+    .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--text);font-weight:600;animation:none}
+    .small{font-size:13px;color:var(--muted)}
+    footer{margin-top:12px;color:var(--muted);font-size:13px}
+    .hidden{display:none}
+    .flex{display:flex;gap:8px;align-items:center}
+    .file-preview{width:100px;height:120px;object-fit:cover;border-radius:8px;border:1px solid rgba(255,255,255,0.06)}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,0.03);text-align:left}
+    .muted-pill{background:rgba(255,255,255,0.02);padding:6px 10px;border-radius:999px;color:var(--muted);font-weight:600}
+    /* Attendance list styling */
+    .att-class-card{border:1px solid rgba(255,0,0,0.14);padding:10px;border-radius:8px;margin:6px 0;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.01))}
+    .att-student{display:flex;justify-content:space-between;align-items:center;padding:8px;border-radius:6px;border:1px solid rgba(255,255,255,0.02);margin-bottom:6px;background:linear-gradient(90deg, rgba(255,255,255,0.01), rgba(255,255,255,0.01))}
+    .present{color:limegreen;font-weight:700}
+    .absent{color:var(--muted)}
+    /* small responsive tweaks */
+    @media(max-width:880px){ .two{grid-template-columns:1fr} .row{flex-direction:column} nav{overflow-x:auto} .brand{font-size:28px;padding:12px 16px} .btn{animation:none} }
+
+    /* Animations */
+    @keyframes cardIn { to { opacity:1; transform:translateY(0) } }
+    @keyframes fadeUp { to { opacity:1; transform:translateY(0) } }
+    @keyframes btnPulse {
+      0% { box-shadow: 0 0 0 0 rgba(255,184,77,0.12) }
+      70% { box-shadow: 0 0 0 10px rgba(255,184,77,0) }
+      100% { box-shadow: 0 0 0 0 rgba(255,184,77,0) }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">SCIENCE TUTORIAL</div>
+      <div class="address">Mahesh Nagar Road no 2, Boring Road, Patna • Mob: 7562821016 • Email: kumarprince85138@gmail.com</div>
+    </header>
+
+    <div class="nav-wrap">
+      <nav id="topNav" aria-label="Main navigation">
+        <button class="nav-btn" id="nav-home">Home</button>
+        <button class="nav-btn" id="nav-register">Student Registration</button>
+        <button class="nav-btn" id="nav-stlogin">Student Login</button>
+        <button class="nav-btn" id="nav-admin">Admin Login</button>
+      </nav>
+      <div id="navIndicator" class="nav-indicator"></div>
+    </div>
+
+    <!-- HOME -->
+    <section id="home" class="card" role="region" aria-labelledby="home-heading">
+      <h2 id="home-heading" style="margin-top:0">Welcome to SCIENCE TUTORIAL</h2>
+      <p class="small">Local demo for student registration, payments, receipts and attendance. Use the top buttons to navigate.</p>
+
+      <div style="margin-top:12px" class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-weight:700">Coaching Details</div>
+            <div class="small muted" style="margin-top:6px;line-height:1.6">
+              Mahesh Nagar Road no 2, Boring Road, Patna<br/>
+              Mob: 7562821016 • Email: kumarprince85138@gmail.com
+            </div>
+          </div>
+          <div style="text-align:right">
+            <div class="small">Total students</div>
+            <div style="font-weight:800;font-size:20px" id="totalCount">0</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:12px" class="card">
+        <h3 style="margin:0 0 8px">Students List</h3>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input id="search" placeholder="Search by name / phone / course / id" class="small" />
+          <button id="searchBtn" class="btn btn-small btn-ghost" style="padding:8px 10px">Search</button>
+          <div style="flex:1"></div>
+          <button id="loadSample" class="btn btn-ghost" style="background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--text)">Load sample</button>
+          <button id="exportCSV" class="btn">Export CSV</button>
+        </div>
+
+        <div id="students" class="students-list" aria-live="polite"></div>
+        <footer>Tip: Edit, delete or open student record to add payments/receipts from Admin login.</footer>
+      </div>
+    </section>
+
+    <!-- REGISTER -->
+    <section id="register" class="card hidden" style="margin-top:12px" role="region" aria-labelledby="register-heading">
+      <h2 id="register-heading" style="margin-top:0">Student Registration</h2>
+      <form id="regForm" class="grid two" style="margin-top:8px" novalidate>
+        <input type="hidden" id="editingId" value="" />
+        <div style="grid-column:1/-1; display:flex; gap:18px; align-items:flex-start">
+          <div style="flex:0 0 140px; text-align:center">
+            <label class="small">Upload Photo</label>
+            <input id="r_photo" name="r_photo" type="file" accept="image/*" />
+            <img id="photoPreview" class="file-preview" src="" alt="" />
+          </div>
+          <div style="flex:1" class="grid two">
+            <div>
+              <label for="r_first">First name *</label>
+              <input id="r_first" name="r_first" required />
+            </div>
+            <div>
+              <label for="r_last">Last name</label>
+              <input id="r_last" name="r_last" />
+            </div>
+            <div>
+              <label for="r_phone">Mobile / फ़ोन *</label>
+              <input id="r_phone" name="r_phone" required />
+            </div>
+            <div>
+              <label for="r_class">Class / क्लास *</label>
+              <input id="r_class" name="r_class" placeholder="e.g., 11, 12, NEET" required />
+            </div>
+            <div>
+              <label for="r_aadhaar">Aadhaar Number / आधार</label>
+              <input id="r_aadhaar" name="r_aadhaar" maxlength="12" />
+            </div>
+            <div>
+              <label for="r_paid">Admission Fees Paid (₹)</label>
+              <input id="r_paid" name="r_paid" type="number" value="0" />
+            </div>
+            <div>
+              <label for="r_father">Father's Name / पिता का नाम</label>
+              <input id="r_father" name="r_father" />
+            </div>
+            <div>
+              <label for="r_mother">Mother's Name / माता का नाम</label>
+              <input id="r_mother" name="r_mother" />
+            </div>
+            <div style="grid-column:1/-1">
+              <label for="r_address">Address / पता</label>
+              <textarea id="r_address" name="r_address" rows="3"></textarea>
+            </div>
+            <div style="grid-column:1/-1">
+              <label for="r_notes">Notes / नोट्स</label>
+              <input id="r_notes" name="r_notes" />
+            </div>
+          </div>
+        </div>
+
+        <div style="grid-column:1/-1;display:flex;justify-content:flex-end;gap:8px">
+          <button type="submit" id="doRegister" class="btn">Register</button>
+          <button type="button" id="cancelRegister" class="nav-btn">Cancel</button>
+        </div>
+      </form>
+      <p class="small" id="regResult" aria-live="polite"></p>
+    </section>
+
+    <!-- STUDENT LOGIN -->
+    <section id="studentLogin" class="card hidden" style="margin-top:12px">
+      <h2 style="margin-top:0">Student Login</h2>
+      <div class="grid two" style="margin-top:8px">
+        <div>
+          <label for="s_id">Student ID</label>
+          <input id="s_id" name="s_id" placeholder="Enter student ID" />
+        </div>
+        <div>
+          <label for="s_phone">Phone</label>
+          <input id="s_phone" name="s_phone" placeholder="Phone used at registration" />
+        </div>
+
+        <div style="grid-column:1/-1;display:flex;justify-content:flex-end;gap:8px">
+          <button id="doStudentLogin" class="btn">Login</button>
+          <button id="studentCancel" class="nav-btn">Cancel</button>
+        </div>
+      </div>
+
+      <div id="studentArea" class="card hidden" style="margin-top:12px">
+        <h3>Student Dashboard</h3>
+        <div id="studentProfile" class="small"></div>
+
+        <div style="margin-top:10px">
+          <h4>Payments</h4>
+          <div id="studentPayments" class="small"></div>
+          <!-- Add-payment removed from student area as requested -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ADMIN LOGIN -->
+    <section id="adminLogin" class="card hidden" style="margin-top:12px">
+      <h2 style="margin-top:0">Admin Login</h2>
+      <div class="grid two" style="margin-top:8px">
+        <div>
+          <label for="admin_email">Admin Email</label>
+          <input id="admin_email" name="admin_email" value="admin@gurukul" />
+        </div>
+        <div>
+          <label for="admin_pass">Password</label>
+          <input id="admin_pass" name="admin_pass" type="password" value="admin123" />
+        </div>
+        <div style="grid-column:1/-1;display:flex;justify-content:flex-end;gap:8px">
+          <button id="doAdminLogin" class="btn">Login</button>
+          <button id="adminCancel" class="nav-btn">Cancel</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ADMIN DASHBOARD -->
+    <section id="adminDashboard" class="card hidden" style="margin-top:12px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <h2 style="flex:1;margin:0">Admin Dashboard</h2>
+        <div class="small">Logged in as <strong>admin@gurukul</strong></div>
+        <button id="adminLogout" class="nav-btn">Logout</button>
+      </div>
+
+      <div style="margin-top:12px" class="card">
+        <h3>Students (Admin)</h3>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input id="adminSearch" placeholder="Search students..." />
+          <button id="adminSearchBtn" class="btn btn-ghost">Search</button>
+          <div style="flex:1"></div>
+          <button id="adminExportCSV" class="btn">Export CSV</button>
+        </div>
+
+        <div style="margin-top:10px; overflow:auto">
+          <table id="adminTable"><thead><tr><th>ID</th><th>Name</th><th>Class</th><th>Phone</th><th>Fees Paid</th><th>Actions</th></tr></thead><tbody></tbody></table>
+        </div>
+      </div>
+
+      <div style="margin-top:12px" class="card">
+        <h3>Payments / Generate Receipt</h3>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <select id="payment_student_select"></select>
+          <input id="pay_amount" type="number" placeholder="Amount (₹)" style="width:120px" />
+          <input id="pay_date" type="date" style="width:160px" />
+          <input id="pay_note" placeholder="Note" style="width:220px" />
+          <button id="addPaymentAdmin" class="btn">Add Payment & Download Receipt</button>
+        </div>
+      </div>
+
+      <div style="margin-top:12px" class="card">
+        <h3>Attendance (class-wise → date-wise)</h3>
+
+        <!-- Class selector (derived from registered students) -->
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
+          <label style="margin:0 6px 0 0" class="small muted-pill">Class</label>
+          <select id="att_class_select" style="min-width:180px"></select>
+
+          <label style="margin-left:8px" class="small muted-pill">Date</label>
+          <input id="att_date" type="date" />
+
+          <button id="loadClassStudents" class="btn">Load Students</button>
+          <button id="viewAttendanceByDate" class="btn btn-ghost">View records for date</button>
+          <input id="view_att_date" type="date" />
+        </div>
+
+        <!-- Where marking happens -->
+        <div id="attendanceMarkArea" style="margin-top:10px"></div>
+
+        <!-- Saved attendance list (shows class → date → names) -->
+        <div id="attendanceRecordsArea" style="margin-top:12px"></div>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const STORAGE_STUDENTS = 'science_tutorial_students_v3';
+    const STORAGE_ATTEND = 'science_tutorial_attendance_v2';
+    const $ = id => document.getElementById(id);
+
+    function loadStudents(){ try { return JSON.parse(localStorage.getItem(STORAGE_STUDENTS) || '[]'); } catch(e){ console.error(e); return []; } }
+    function saveStudents(list){ localStorage.setItem(STORAGE_STUDENTS, JSON.stringify(list)); renderList(); renderAdminTable(); updateCount(); populatePaymentSelect(); populateClassSelect(); renderAttendanceRecords(); }
+    function loadAttendance(){ try { return JSON.parse(localStorage.getItem(STORAGE_ATTEND) || '[]'); } catch(e){ console.error(e); return []; } }
+    function saveAttendance(list){ localStorage.setItem(STORAGE_ATTEND, JSON.stringify(list)); renderAttendanceRecords(); }
+
+    function genId(){ return 'STU-' + Date.now().toString(36).toUpperCase().slice(0,8); }
+    function nowISO(){ return new Date().toISOString().slice(0,10); }
+    function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+    // NAV indicator & navigation
+    function setActiveNav(btnEl){
+      if(!btnEl) return;
+      Array.from(document.querySelectorAll('.nav-btn')).forEach(b=> b.classList.remove('active'));
+      btnEl.classList.add('active');
+      const nav = $('topNav');
+      const ind = $('navIndicator');
+      const btnRect = btnEl.getBoundingClientRect();
+      const navRect = nav.getBoundingClientRect();
+      const left = btnRect.left - navRect.left + nav.scrollLeft;
+      ind.style.width = btnRect.width + 'px';
+      ind.style.transform = `translateX(${left}px)`;
+    }
+    function show(sectionId){
+      ['home','register','studentLogin','adminLogin','adminDashboard'].forEach(id=>{
+        const el = $(id); if(el) el.classList.add('hidden');
+      });
+      const s = $(sectionId); if(s) s.classList.remove('hidden');
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+
+    // Wire nav
+    const btnHome = $('nav-home'), btnRegister = $('nav-register'), btnStLogin = $('nav-stlogin'), btnAdmin = $('nav-admin');
+    btnHome.addEventListener('click', ()=>{ show('home'); setActiveNav(btnHome); });
+    btnRegister.addEventListener('click', ()=>{ show('register'); setActiveNav(btnRegister); });
+    btnStLogin.addEventListener('click', ()=>{ show('studentLogin'); setActiveNav(btnStLogin); });
+    btnAdmin.addEventListener('click', ()=>{ show('adminLogin'); setActiveNav(btnAdmin); });
+
+    // Photo preview
+    const r_photo_el = $('r_photo');
+    if(r_photo_el){
+      r_photo_el.addEventListener('change', (ev)=>{
+        const f = ev.target.files && ev.target.files[0];
+        if(!f) { $('photoPreview').src=''; return; }
+        const reader = new FileReader();
+        reader.onload = function(e){ $('photoPreview').src = e.target.result; };
+        reader.readAsDataURL(f);
+      });
+    }
+
+    // Register form
+    const regForm = $('regForm'), editingId = $('editingId');
+    if(regForm){
+      regForm.addEventListener('submit', function(e){
+        e.preventDefault();
+        const idEdit = editingId.value && editingId.value.trim();
+        const first = $('r_first').value.trim();
+        const last = $('r_last').value.trim();
+        const phone = $('r_phone').value.trim();
+        const className = $('r_class').value.trim();
+        if(!first || !phone || !className){ alert('First name, phone and class are required'); return; }
+
+        const payload = {
+          firstName: first,
+          lastName: last,
+          phone,
+          email: $('r_email') ? $('r_email').value.trim() : '',
+          class: className,
+          aadhaar: $('r_aadhaar').value.trim(),
+          address: $('r_address').value.trim(),
+          father: $('r_father').value.trim(),
+          mother: $('r_mother').value.trim(),
+          photo: $('photoPreview').src && $('photoPreview').src.startsWith('data:') ? $('photoPreview').src : '',
+          notes: $('r_notes').value.trim()
+        };
+
+        const list = loadStudents();
+
+        if(idEdit){
+          const idx = list.findIndex(s => s.id === idEdit);
+          if(idx === -1){ alert('Editing student not found'); editingId.value=''; return; }
+          const existing = list[idx];
+          list[idx] = Object.assign({}, existing, payload);
+          list[idx].payments = existing.payments || [];
+          list[idx].created = existing.created || nowISO();
+          saveStudents(list);
+          $('regResult').textContent = `Updated: ${list[idx].id}`;
+        } else {
+          const student = {
+            id: genId(),
+            ...payload,
+            payments: [],
+            created: nowISO()
+          };
+          const paid = Number($('r_paid').value || 0);
+          if(paid > 0) student.payments.push({ amount: paid, date: nowISO(), note: 'Admission fee' });
+          list.push(student);
+          saveStudents(list);
+          $('regResult').textContent = `Registered: ${student.id}`;
+        }
+
+        regForm.reset();
+        $('photoPreview').src = '';
+        editingId.value = '';
+        $('doRegister').textContent = 'Register';
+        show('home');
+      });
+    }
+
+    // Cancel registration
+    const cancelReg = $('cancelRegister');
+    if(cancelReg) cancelReg.addEventListener('click', ()=>{
+      regForm.reset(); $('photoPreview').src=''; editingId.value=''; $('doRegister').textContent='Register'; show('home');
+    });
+
+    // Students list
+    function renderList(filter=''){
+      const container = $('students');
+      const list = loadStudents();
+      container.innerHTML = '';
+      const filtered = list.filter(s=>{
+        if(!filter) return true;
+        const f = filter.toLowerCase();
+        return (s.firstName && s.firstName.toLowerCase().includes(f)) ||
+               (s.lastName && s.lastName.toLowerCase().includes(f)) ||
+               (s.phone && s.phone.includes(f)) ||
+               (s.class && s.class.toLowerCase().includes(f)) ||
+               (s.id && s.id.toLowerCase().includes(f));
+      });
+      if(!filtered.length){
+        container.innerHTML = '<div class="small muted">No students found.</div>';
+        updateCount();
+        return;
+      }
+      filtered.slice().reverse().forEach(s=>{
+        const div = document.createElement('div'); div.className='student';
+        div.innerHTML = `
+          <div style="display:flex;gap:12px;align-items:center">
+            <div class="avatar">${(s.firstName||'?')[0].toUpperCase()}</div>
+            <div>
+              <div style="font-weight:700">${escapeHtml(s.firstName)} ${escapeHtml(s.lastName||'')}</div>
+              <div class="muted">${escapeHtml(s.class||'No class')} • ${escapeHtml(s.email||'')} • ${escapeHtml(s.phone||'')}</div>
+              <div class="small muted">ID: ${s.id} • Registered: ${s.created||'-'}</div>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="nav-btn" data-id="${s.id}" onclick="openStudentQuick(this.dataset.id)">Open</button>
+            <button class="nav-btn" data-id="${s.id}" onclick="startEdit(this.dataset.id)" style="border:1px solid rgba(255,255,255,0.04)">Edit</button>
+            <button class="nav-btn" data-id="${s.id}" onclick="deleteStudent(this.dataset.id)" style="color:var(--danger);border:1px solid rgba(255,0,0,0.06)">Delete</button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+      updateCount();
+    }
+    function updateCount(){ $('totalCount').textContent = loadStudents().length; }
+
+    // Search / sample / export hooks
+    const searchBtn = $('searchBtn'); if(searchBtn) searchBtn.addEventListener('click', ()=> renderList($('search').value.trim()));
+    const searchInput = $('search'); if(searchInput) searchInput.addEventListener('keyup', (e)=>{ if(e.key==='Enter') renderList($('search').value.trim()); });
+    const loadSample = $('loadSample'); if(loadSample) loadSample.addEventListener('click', ()=> {
+      if(!confirm('Replace current students with sample data?')) return;
+      const sample = [
+        {id:'STU-DEMO-001',firstName:'Asha',lastName:'Verma',phone:'9876543210',email:'asha@example.com',class:'Mathematics',created:nowISO(),payments:[{amount:1000,date:nowISO(),note:'Admission'}]},
+        {id:'STU-DEMO-002',firstName:'Rahul',lastName:'Kumar',phone:'9123456780',email:'rahul@example.com',class:'Physics',created:nowISO(),payments:[]}
+      ];
+      saveStudents(sample); alert('Sample students loaded');
+    });
+    const exportCSVBtn = $('exportCSV'); if(exportCSVBtn) exportCSVBtn.addEventListener('click', ()=>{
+      const list = loadStudents(); if(!list.length) return alert('No students to export');
+      const rows = [['id','firstName','lastName','phone','email','class','created','totalPaid']];
+      list.forEach(s => rows.push([s.id,s.firstName||'',s.lastName||'',s.phone||'',s.email||'',s.class||'',s.created||'', (s.payments||[]).reduce((a,b)=>a+Number(b.amount||0),0)]));
+      const csv = rows.map(r => r.map(c => '"' + String(c).replace(/"/g,'""') + '"').join(',')).join('\n');
+      const blob = new Blob([csv], {type:'text/csv'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'science_tutorial_students.csv'; document.body.appendChild(a); a.click(); a.remove();
+    });
+
+    // Edit / Delete
+    window.startEdit = function(id){
+      const list = loadStudents(); const s = list.find(x=>x.id===id); if(!s) return alert('Not found');
+      $('r_first').value = s.firstName || ''; $('r_last').value = s.lastName || ''; $('r_phone').value = s.phone || ''; $('r_class').value = s.class || '';
+      if($('r_email')) $('r_email').value = s.email || ''; if($('r_paid')) $('r_paid').value = (s.payments||[]).reduce((a,b)=>a+Number(b.amount||0),0);
+      $('r_aadhaar').value = s.aadhaar || ''; $('r_father').value = s.father || ''; $('r_mother').value = s.mother || '';
+      $('r_address').value = s.address || ''; $('r_notes').value = s.notes || '';
+      if(s.photo) $('photoPreview').src = s.photo;
+      $('editingId').value = s.id; $('doRegister').textContent = 'Update'; show('register'); setActiveNav(btnRegister); window.scrollTo({top:0,behavior:'smooth'});
+    };
+    window.deleteStudent = function(id){ if(!confirm('Delete this student?')) return; const list = loadStudents().filter(x=>x.id!==id); saveStudents(list); }
+
+    // Admin login + UI
+    const doAdminLogin = $('doAdminLogin'); if(doAdminLogin) doAdminLogin.addEventListener('click', ()=>{
+      const email = $('admin_email').value.trim(); const pass = $('admin_pass').value;
+      if(email === 'admin@gurukul' && pass === 'admin123'){ show('adminDashboard'); setActiveNav(btnAdmin); renderAdminTable(); populatePaymentSelect(); populateClassSelect(); renderAttendanceRecords(); } else alert('Invalid admin credentials (demo)');
+    });
+    const adminCancel = $('adminCancel'); if(adminCancel) adminCancel.addEventListener('click', ()=> show('home'));
+    const adminLogout = $('adminLogout'); if(adminLogout) adminLogout.addEventListener('click', ()=> { show('home'); setActiveNav(btnHome); });
+
+    // Admin table & payments
+    function renderAdminTable(filter=''){
+      const tbody = $('adminTable').querySelector('tbody'); const list = loadStudents(); tbody.innerHTML = '';
+      const filtered = list.filter(s=> { if(!filter) return true; const f = filter.toLowerCase(); return (s.firstName && s.firstName.toLowerCase().includes(f)) || (s.id && s.id.toLowerCase().includes(f)) || (s.phone && s.phone.includes(f)); });
+      filtered.forEach(s=>{
+        const tr = document.createElement('tr'); const totalPaid = (s.payments||[]).reduce((a,b)=>a+Number(b.amount||0),0);
+        tr.innerHTML = `<td>${s.id}</td><td>${escapeHtml(s.firstName)} ${escapeHtml(s.lastName||'')}</td><td>${escapeHtml(s.class||'-')}</td><td>${escapeHtml(s.phone||'-')}</td><td>₹${totalPaid}</td>
+          <td><button class="btn btn-ghost" onclick="adminView('${s.id}')">View</button> <button class="btn" onclick="adminOpenEdit('${s.id}')">Edit</button></td>`;
+        tbody.appendChild(tr);
+      });
+    }
+    const adminSearchBtn = $('adminSearchBtn'); if(adminSearchBtn) adminSearchBtn.addEventListener('click', ()=> renderAdminTable($('adminSearch').value.trim()));
+    function populatePaymentSelect(){ const sel = $('payment_student_select'); if(!sel) return; sel.innerHTML=''; const list = loadStudents(); list.forEach(s => { const opt = document.createElement('option'); opt.value=s.id; opt.textContent = `${s.id} — ${s.firstName} ${s.lastName||''} (${s.class||'-'})`; sel.appendChild(opt); }); }
+    const addPaymentAdmin = $('addPaymentAdmin'); if(addPaymentAdmin) addPaymentAdmin.addEventListener('click', ()=>{
+      const sid = $('payment_student_select').value; const amount = Number($('pay_amount').value || 0); const date = $('pay_date').value || nowISO(); const note = $('pay_note').value.trim() || 'Payment';
+      if(!sid || !amount) return alert('Select student and enter amount');
+      const list = loadStudents(); const s = list.find(x=>x.id===sid); if(!s) return alert('Student not found');
+      s.payments = s.payments || []; s.payments.push({ amount, date, note }); saveStudents(list); generateReceiptPDF(s, { amount, date, note }); $('pay_amount').value=''; $('pay_note').value=''; alert('Payment added and receipt will download');
+    });
+
+    window.adminView = function(id){ const list = loadStudents(); const s = list.find(x=>x.id===id); if(!s) return alert('Not found'); let html = `<html><head><title>Student ${s.id}</title></head><body style="font-family:sans-serif;color:#111">`; html += `<h2>${s.firstName} ${s.lastName || ''} (${s.id})</h2>`; html += `<p>Class: ${s.class || '-'} | Phone: ${s.phone || '-'} | Aadhaar: ${s.aadhaar || '-'}</p>`; html += `<h3>Payments</h3>`; if(!s.payments || !s.payments.length) html += '<div>No payments</div>'; else { html += '<table border="1" cellpadding="6" cellspacing="0"><tr><th>Date</th><th>Amount</th><th>Note</th><th>Receipt</th></tr>'; s.payments.forEach((p, idx) => { html += `<tr><td>${p.date}</td><td>₹${p.amount}</td><td>${p.note||''}</td><td><button onclick="window.opener.generateReceiptFromChild('${s.id}',${idx});">Download</button></td></tr>`; }); html += '</table>'; } html += `<p><button onclick="window.close()">Close</button></p></body></html>`; const w = window.open('', '_blank', 'width=800,height=600'); w.document.write(html); w.document.close(); };
+    window.generateReceiptFromChild = function(studentId, payIndex){ const list = loadStudents(); const s = list.find(x=>x.id===studentId); if(!s) return alert('Student not found'); const p = s.payments[payIndex]; if(!p) return alert('Payment not found'); generateReceiptPDF(s,p); };
+    window.adminOpenEdit = function(id){ startEdit(id); setActiveNav(btnRegister); };
+
+    // Student login (view-only payments)
+    const doStudentLogin = $('doStudentLogin'); if(doStudentLogin) doStudentLogin.addEventListener('click', ()=>{
+      const id = $('s_id').value.trim(); const phone = $('s_phone').value.trim(); const list = loadStudents(); const s = list.find(x=>x.id===id && x.phone===phone);
+      if(!s) return alert('Invalid credentials (ID + phone)');
+      $('studentArea').classList.remove('hidden'); $('studentProfile').innerHTML = `<strong>${s.firstName} ${s.lastName||''}</strong> <div class="muted">ID: ${s.id} • Class: ${s.class||'-'}</div>`; renderStudentPayments(s); sessionStorage.setItem('loggedStudent', s.id); setActiveNav(btnStLogin);
+    });
+    const studentCancel = $('studentCancel'); if(studentCancel) studentCancel.addEventListener('click', ()=> { $('s_id').value=''; $('s_phone').value=''; $('studentArea').classList.add('hidden'); sessionStorage.removeItem('loggedStudent'); });
+    function renderStudentPayments(s){ const el = $('studentPayments'); const list = s.payments || []; if(!list.length){ el.innerHTML = '<div class="muted">No payments yet</div>'; return; } let html = '<table><thead><tr><th>Date</th><th>Amount</th><th>Note</th><th>Receipt</th></tr></thead><tbody>'; list.slice().reverse().forEach((p, idx) => { html += `<tr><td>${p.date}</td><td>₹${p.amount}</td><td>${p.note||''}</td><td><button class="btn btn-ghost" onclick="generateReceiptByStudent('${s.id}', ${s.payments.length - 1 - idx})">Download</button></td></tr>`; }); html += '</tbody></table>'; el.innerHTML = html; }
+    window.generateReceiptByStudent = function(studentId, payIdx){ const list = loadStudents(); const s = list.find(x=>x.id===studentId); if(!s) return alert('Not found'); const p = s.payments[payIdx]; if(!p) return alert('Payment not found'); generateReceiptPDF(s,p); };
+
+    // Attendance improvements (class-wise first, then date, show student names)
+    function getUniqueClasses(){
+      const classes = Array.from(new Set(loadStudents().map(s => (s.class||'').trim()).filter(Boolean)));
+      classes.sort();
+      return classes;
+    }
+    function populateClassSelect(){
+      const sel = $('att_class_select'); if(!sel) return;
+      sel.innerHTML = '<option value="">-- select class --</option>';
+      getUniqueClasses().forEach(c => {
+        const opt = document.createElement('option'); opt.value = c; opt.textContent = c; sel.appendChild(opt);
+      });
+    }
+
+    // load students for class to mark attendance
+    const loadClassStudentsBtn = $('loadClassStudents');
+    if(loadClassStudentsBtn) loadClassStudentsBtn.addEventListener('click', ()=>{
+      const cls = $('att_class_select').value;
+      const date = $('att_date').value || nowISO();
+      if(!cls) return alert('Select a class first');
+      const students = loadStudents().filter(s => (s.class||'').toLowerCase() === cls.toLowerCase());
+      if(!students.length) return alert('No students found for this class');
+      // build UI
+      const area = $('attendanceMarkArea');
+      area.innerHTML = `<div class="att-class-card"><strong>Mark attendance for <span style="color:var(--accent)">${escapeHtml(cls)}</span> — ${date}</strong></div>`;
+      const form = document.createElement('form');
+      const listDiv = document.createElement('div');
+      students.forEach((s, idx) => {
+        const div = document.createElement('div'); div.className = 'att-student';
+        div.innerHTML = `<div><strong>${escapeHtml(s.firstName)} ${escapeHtml(s.lastName||'')}</strong><div class="small muted">${s.id} • ${s.phone||'-'}</div></div>
+          <div><input type="checkbox" data-id="${s.id}" checked></div>`;
+        listDiv.appendChild(div);
+      });
+      form.appendChild(listDiv);
+      const saveBtn = document.createElement('button'); saveBtn.type='button'; saveBtn.className='btn'; saveBtn.textContent='Save Attendance';
+      saveBtn.addEventListener('click', ()=>{
+        const checked = Array.from(form.querySelectorAll('input[type="checkbox"]:checked')).map(cb=>cb.getAttribute('data-id'));
+        const records = loadAttendance();
+        // Replace existing record for same class+date
+        const existingIndex = records.findIndex(r => r.className===cls && r.date===date);
+        const newRecord = { className: cls, date, presentIds: checked };
+        if(existingIndex >= 0) records[existingIndex] = newRecord; else records.push(newRecord);
+        saveAttendance(records);
+        alert('Attendance saved for ' + cls + ' on ' + date);
+        area.innerHTML = '';
+        renderAttendanceRecords();
+      });
+      form.appendChild(saveBtn);
+      area.appendChild(form);
+    });
+
+    // render attendance records summary grouped by class/date and show names
+    function renderAttendanceRecords(){
+      const records = loadAttendance();
+      const area = $('attendanceRecordsArea');
+      if(!area) return;
+      if(!records.length){ area.innerHTML = '<div class="small muted">No attendance records</div>'; return; }
+      // group by date -> class -> presentIds
+      const byDate = {};
+      records.forEach(r => {
+        if(!byDate[r.date]) byDate[r.date] = {};
+        byDate[r.date][r.className] = r.presentIds || [];
+      });
+      let html = '<div style="max-height:360px;overflow:auto">';
+      Object.keys(byDate).sort((a,b)=>b.localeCompare(a)).forEach(date => {
+        html += `<div style="margin-bottom:10px"><strong>${date}</strong>`;
+        Object.keys(byDate[date]).forEach(cls => {
+          const presentIds = byDate[date][cls];
+          const students = loadStudents().filter(s => presentIds.includes(s.id));
+          html += `<div class="att-class-card"><div style="display:flex;justify-content:space-between;align-items:center"><div><strong>Class: ${escapeHtml(cls)}</strong><div class="small muted">Present: ${presentIds.length}</div></div><div><button class="btn btn-ghost" onclick="showAttendanceDetails('${date}','${cls.replace(/'/g,"\\'")}')">View details</button></div></div>`;
+          html += `<div style="margin-top:8px">${students.map(s=>`<div style="padding:6px 0">${escapeHtml(s.firstName)} ${escapeHtml(s.lastName||'')} — ${s.id} — ${s.phone||'-'}</div>`).join('')}</div>`;
+          html += `</div>`;
+        });
+        html += `</div>`;
+      });
+      html += '</div>';
+      area.innerHTML = html;
+    }
+
+    // view by date button
+    const viewByDateBtn = $('viewAttendanceByDate'); if(viewByDateBtn) viewByDateBtn.addEventListener('click', ()=>{
+      const date = $('view_att_date').value; if(!date) return alert('Select a date'); const records = loadAttendance().filter(r=>r.date===date); const area = $('attendanceRecordsArea');
+      if(!records.length){ area.innerHTML = `<div class="small muted">No attendance records for ${date}</div>`; return; }
+      // similar rendering but only for the date
+      let html = `<div><strong>Attendance for ${date}</strong>`;
+      records.forEach(r => {
+        const presentIds = r.presentIds || [];
+        const students = loadStudents().filter(s => presentIds.includes(s.id));
+        html += `<div class="att-class-card"><div style="display:flex;justify-content:space-between;align-items:center"><div><strong>Class: ${escapeHtml(r.className)}</strong><div class="small muted">Present: ${presentIds.length}</div></div><div><button class="btn btn-ghost" onclick="showAttendanceDetails('${date}','${r.className.replace(/'/g,"\\'")}')">View details</button></div></div>`;
+        html += `<div style="margin-top:8px">${students.map(s=>`<div style="padding:6px 0">${escapeHtml(s.firstName)} ${escapeHtml(s.lastName||'')} — ${s.id} — ${s.phone||'-'}</div>`).join('')}</div>`;
+        html += `</div>`;
+      });
+      html += `</div>`;
+      area.innerHTML = html;
+    });
+
+    // show attendance details in a small window (names)
+    window.showAttendanceDetails = function(date, classNameEscaped){
+      const className = classNameEscaped;
+      const records = loadAttendance().filter(r => r.date===date && r.className===className);
+      if(!records.length) return alert('No records found');
+      const presentIds = Array.from(new Set(records.flatMap(r => r.presentIds || [])));
+      const students = loadStudents(); const lines = presentIds.map(id => {
+        const s = students.find(x => x.id===id);
+        return s ? `${s.id} — ${s.firstName} ${s.lastName || ''} (${s.phone || '-'})` : id;
+      });
+      const w = window.open('', '_blank', 'width=600,height=400');
+      w.document.write(`<pre style="white-space:pre-wrap;font-family:Arial;padding:12px">${escapeHtml(lines.join('\n') || 'No present students')}</pre>`);
+      w.document.title = `Attendance ${className} ${date}`; w.document.close();
+    };
+
+    // Create attendance handled earlier: Save replaces record for class+date
+
+    // helper: view all attendance (initial)
+    const viewAllBtn = $('viewAttendance'); if(viewAllBtn) viewAllBtn.addEventListener('click', ()=> renderAttendanceRecords());
+
+    // receipt generator (html2pdf)
+    function generateReceiptPDF(student, payment){
+      const receiptHTML = `
+        <div style="font-family:Arial,sans-serif;padding:18px;color:#000;background:#fff;max-width:700px;margin:auto;border:1px solid #ddd">
+          <div style="text-align:center;border-bottom:2px double #000;padding-bottom:8px">
+            <h2 style="margin:0">SCIENCE TUTORIAL</h2>
+            <div style="font-size:13px;margin-top:4px">Mahesh Nagar Road no 2, Boring Road, Patna</div>
+            <div style="font-size:13px">Phone: 7562821016</div>
+          </div>
+          <div style="margin-top:12px;font-size:14px">
+            <p><strong>Receipt No:</strong> REC-${new Date().getFullYear()}-${String(Math.floor(Math.random()*10000)).padStart(4,'0')}</p>
+            <p><strong>Student:</strong> ${escapeHtml(student.firstName)} ${escapeHtml(student.lastName||'')} (${student.id})</p>
+            <p><strong>Class:</strong> ${escapeHtml(student.class||'-')}</p>
+            <p><strong>Payment Date:</strong> ${payment.date}</p>
+            <p><strong>Amount Paid:</strong> ₹${payment.amount}</p>
+            <p><strong>Note:</strong> ${escapeHtml(payment.note || '')}</p>
+          </div>
+          <div style="margin-top:18px;text-align:center;font-weight:700">Received with thanks</div>
+          <div style="margin-top:12px;border-top:1px solid #ddd;padding-top:8px;font-size:12px;color:#333">
+            SCIENCE TUTORIAL — Mahesh Nagar Road no 2, Boring Road, Patna
+          </div>
+        </div>
+      `;
+      const container = document.createElement('div'); container.innerHTML = receiptHTML; document.body.appendChild(container);
+      const opt = { margin: 0.4, filename: `Receipt_${student.id}_${payment.date}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, backgroundColor: '#ffffff' }, jsPDF: { unit: 'in', format: 'A4', orientation: 'portrait' } };
+      html2pdf().set(opt).from(container).save().then(()=> { document.body.removeChild(container); });
+    }
+    window.generateReceiptPDF = generateReceiptPDF;
+    window.generateReceiptFromChild = function(studentId, payIndex){ const list = loadStudents(); const s = list.find(x=>x.id===studentId); if(!s) return alert('Student not found'); const p = s.payments[payIndex]; if(!p) return alert('Payment not found'); generateReceiptPDF(s,p); };
+
+    // helper renderers
+    function renderAdminTable(filter=''){ /* defined earlier, re-used */ const tbody = $('adminTable').querySelector('tbody'); const list = loadStudents(); tbody.innerHTML=''; const filtered = list.filter(s=>{ if(!filter) return true; const f = filter.toLowerCase(); return (s.firstName && s.firstName.toLowerCase().includes(f)) || (s.id && s.id.toLowerCase().includes(f)) || (s.phone && s.phone.includes(f)); }); filtered.forEach(s=>{ const tr = document.createElement('tr'); const totalPaid = (s.payments||[]).reduce((a,b)=>a+Number(b.amount||0),0); tr.innerHTML = `<td>${s.id}</td><td>${escapeHtml(s.firstName)} ${escapeHtml(s.lastName||'')}</td><td>${escapeHtml(s.class||'-')}</td><td>${escapeHtml(s.phone||'-')}</td><td>₹${totalPaid}</td><td><button class="btn btn-ghost" onclick="adminView('${s.id}')">View</button> <button class="btn" onclick="adminOpenEdit('${s.id}')">Edit</button></td>`; tbody.appendChild(tr); }); }
+
+    // populate class select initially
+    function initAdminUI(){ renderAdminTable(); populatePaymentSelect(); populateClassSelect(); renderAttendanceRecords(); }
+
+    // initial boot
+    if(!localStorage.getItem(STORAGE_STUDENTS)) localStorage.setItem(STORAGE_STUDENTS, JSON.stringify([]));
+    if(!localStorage.getItem(STORAGE_ATTEND)) localStorage.setItem(STORAGE_ATTEND, JSON.stringify([]));
+    setTimeout(()=> setActiveNav(btnHome), 80);
+    renderList(); updateCount(); initAdminUI();
+
+    // expose small helpers
+    window.renderList = renderList;
+    window.renderAdminTable = renderAdminTable;
+    window.populatePaymentSelect = populatePaymentSelect;
+    window.populateClassSelect = populateClassSelect;
+    window.renderAttendanceRecords = renderAttendanceRecords;
+    window.startEdit = startEdit;
+    window.deleteStudent = deleteStudent;
+    window.openStudentQuick = function(id){ const s = loadStudents().find(x=>x.id===id); if(!s) return alert('Not found'); alert(`${s.firstName} ${s.lastName||''}\nClass: ${s.class||'-'}\nPhone: ${s.phone}\nID: ${s.id}`); };
+
+    window.addEventListener('error', function(evt){ console.error('Unhandled error:', evt.error || evt.message, evt); });
+  }); // DOMContentLoaded
+  </script>
+</body>
+</html>
